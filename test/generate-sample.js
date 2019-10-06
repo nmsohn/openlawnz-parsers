@@ -3,7 +3,7 @@ chai.should();
 chai.use(require("./lib/chai-things"));
 const expect = chai.expect;
 
-const { calculateLegislationSectionsRange, getChosenCases } = require("../mturk/index");
+const { calculateLegislationSectionsRange, getChosenCases } = require("../generate-sample/index");
 
 const cases_1 = [
 	{
