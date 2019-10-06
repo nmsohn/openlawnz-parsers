@@ -4,16 +4,16 @@
 const argv = require('yargs').argv;
 const moment = require('moment');
 
-const setup = require('../common/setup.js');
+const setup = require('./common/setup');
 
-const resetCases = require('../parser/_resetCases');
-const parseInvalidCharacters = require('../parser/parseInvalidCharacters');
-const parseFootnotes = require('../parser/parseFootnotes');
-const parseEmptyCitations = require('../parser/parseEmptyCitations');
-const parseCourts = require('../parser/parseCourts');
-const parseCaseCitations = require('../parser/parseCaseCitations');
-const parseCaseToCase = require('../parser/parseCaseToCase');
-const parseLegislationToCases = require('../parser/parseLegislationToCases');
+const resetCases = require('./parser/_resetCases');
+const parseInvalidCharacters = require('./parser/parseInvalidCharacters');
+const parseFootnotes = require('./parser/parseFootnotes');
+const parseEmptyCitations = require('./parser/parseEmptyCitations');
+const parseCourts = require('./parser/parseCourts');
+const parseCaseCitations = require('./parser/parseCaseCitations');
+const parseCaseToCase = require('./parser/parseCaseToCase');
+const parseLegislationToCases = require('./parser/parseLegislationToCases');
 
 // TODO: Timings between each step
 const run = async () => {
