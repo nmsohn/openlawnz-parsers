@@ -1,6 +1,6 @@
 # openlawnz-parser
 
-There are 2 parts: Pipeline (getting data), and Parser (parsing the data).
+There are 2 parts: Pipeline (getting data), and Parser (parsing the data). Pipeline is used to reset `cases` schema and fetch data from `pipline_cases` schema
 
 ## Parsers Quick Start for Openlaw NZ volunteers
 
@@ -13,7 +13,11 @@ There are 2 parts: Pipeline (getting data), and Parser (parsing the data).
 ## General requirements
 
 - Yarn
-- Rename `.env.sample` to .env.`env` (e.g. `.env.local`) and fill in with MySQL details.
+- Rename `.env.sample` to .env.`env` (e.g. `.env.local`) and fill in with PostgreSQL details.
+```bash
+cp .env.sample .env
+```
+- Docker
 
 ## env
 
@@ -31,6 +35,18 @@ There are 2 databases:
 
 - `pipeline_cases`: this is populated by running the pipeline and is not affected by the parsers
 - `cases`: this is populated and mutated by running the parsers
+
+To setup a docker environment, you can find `docker-setup.sh` in scripts folder. Run the bash script and check if it has correctly restored SQL dump file.
+
+```bash
+docker ps -a
+docker exec -it [container-name/id] psql -U postgres
+```
+```sql
+SELECT * FROM cases LIMIT100
+```
+
+To use `docker-compose`, you may find this page [Getting started with Docker](https://github.com/openlawnz/openlawnz-api/wiki/%F0%9F%9B%B3%EF%B8%8F-Getting-started-with-Docker) useful.
 
 ## Pipeline
 
@@ -125,6 +141,11 @@ node getLegislation.js --env=<env> --datasource=<datasource> [--datalocation=<da
 ```bash
 cd parser
 node parseCaseToCase.js --env=<env>
+```
+
+- To run all the scripts
+```bash
+node index.js --env=<env>
 ```
 
 ## NOTICE
