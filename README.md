@@ -14,9 +14,9 @@ There are 2 parts: Pipeline (getting data), and Parser (parsing the data). Pipel
 
 - Yarn
 - Rename `.env.sample` to .env.`env` (e.g. `.env.local`) and fill in with PostgreSQL details.
-```bash
-cp .env.sample .env
-```
+   ```bash
+   cp .env.sample .env
+   ```
 - Docker
 
 ## env
@@ -147,6 +147,9 @@ node parseCaseToCase.js --env=<env>
 ```bash
 node index.js --env=<env>
 ```
+
+### Testing
+- When you make a pull request, `yarn test` will automatically start via Github Action. To run locally, use `yarn test`
 
 ## NOTICE
 
