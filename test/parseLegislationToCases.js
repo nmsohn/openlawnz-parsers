@@ -685,7 +685,7 @@ Section 310, Gambling Act.
 File Name: data/legislation/10-footnotes-interfering.txt
 --------------------------------------------------- 
 */
-//FIXME: It does not return the expected results.
+//FIXME: It does not count sections correctly
 describe("Footnotes", function() {
 	it("Should return section 17 of the Insolvency Act (3 times), and section 310 of the Gambling Act, and (fake) Section 18 of Unit Titles Act 2010", done => {
 		getTestResult(

@@ -56,8 +56,8 @@ module.exports = async (env, resumeSessionId) => {
 		client_encoding: 'UTF8'
 	};
 
-	let connection = await pgPromise(conn);
-	let pipeline_connection = await pgPromise(p_conn);
+	let connection = pgPromise(conn);
+	let pipeline_connection = pgPromise(p_conn);
 
 	return {
 		sessionId,

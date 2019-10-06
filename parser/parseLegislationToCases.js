@@ -472,8 +472,8 @@ const processCase = (legalCase, legislations) => {
 	});
 
 	let case_text = legalCase.case_text;
-	const footnotes = legalCase.case_footnotes ? legalCase.case_footnotes.split('\n') : [];
-	const footnoteContexts = legalCase.case_footnote_contexts ? legalCase.case_footnote_contexts.split('\n') : [];
+	const footnotes = legalCase.case_footnotes ? legalCase.case_footnotes.split('\r\n') : [];
+	const footnoteContexts = legalCase.case_footnote_contexts ? legalCase.case_footnote_contexts.split('\r\n') : [];
 
 	if (footnotes.length > 0 && legalCase.case_footnotes_exist_in_text) {
 		// Remove footnotes from case
