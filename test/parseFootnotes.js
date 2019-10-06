@@ -64,7 +64,7 @@ describe('Validity and existence of footnotes/contexts', function() {
 	it("Should exist", () => {
 		
 		const { footnotesExistInText } = processCase(makeCaseObject("exists"))
-		
+		console.log()
 		expect(footnotesExistInText).equal(true)
 
 	});
