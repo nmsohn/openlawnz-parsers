@@ -1,9 +1,5 @@
 # openlawnz-parser
 
-There are 2 parts: Pipeline (getting data), and Parser (parsing the data).
-- Pipeline is used to reset `cases` schema and fetch data from `pipline_cases` schema
-- Parser is to trim the data in `cases`
-
 ## Parsers Quick Start for Openlaw NZ volunteers
 
 1. Ask for a copy of the OpenLaw NZ DB in the Slack channel for your own PostgreSQL server setup
