@@ -29,7 +29,7 @@ yarn install
 
 ## Database Setup
 
-There are 2 databases:
+There are 2 schemas:
 
 - `pipeline_cases`: this is populated by running the pipeline and is not affected by the parsers
 - `cases`: this is populated and mutated by running the parsers
