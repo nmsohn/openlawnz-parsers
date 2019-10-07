@@ -25,6 +25,7 @@ Where you see the `env` option in a command, it will look for the corresponding 
 
 ```bash
 yarn install
+# Do not run npm install
 ```
 
 ## Database Setup
@@ -72,7 +73,7 @@ node index.js --env=<env>
 ```
 
 ### Testing
-- When you make a pull request, `yarn test` will automatically start via Github Action. To run locally, use `yarn test` in your local terminal
+- When you make a pull request, `yarn test` will automatically start via Github Action. To run locally, use `yarn test` in your local terminal.
 
 ## NOTICE
 
