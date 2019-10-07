@@ -4,7 +4,7 @@
 
 1. Ask for a copy of the OpenLaw NZ DB in the Slack channel for your own PostgreSQL server setup
     * If you're interested in volunteering please get in touch!
-2. Follow "General requirements", "env" and "Installing" steps below
+2. Follow "[General requirements](#general-requirements)", "[env](#env)" and "[Installing](#installing)" steps below
 3. Look at the [Database Setup](#database-setup) section
 3. Look at the [Parser](#parser) section
 
@@ -34,14 +34,20 @@ There are 2 databases:
 - `pipeline_cases`: this is populated by running the pipeline and is not affected by the parsers
 - `cases`: this is populated and mutated by running the parsers
 
-To setup a docker environment, you can find `docker-setup.sh` in scripts folder. Run the bash script and check if it has correctly restored SQL dump file.
+To setup a docker environment, you can find `docker.sh` at [openlawnz-orchestration](https://github.com/openlawnz/openlawnz-orchestration). Run the bash script.
 
+And check if it has correctly restored SQL dump file.
 ```bash
+# see all containers available
 docker ps -a
-docker exec -it [container-name/id] psql -U postgres
+# open psql cli
+docker exec -it [container-name/id] psql -U postgres -d <db-name>
 ```
-```sql
-SELECT * FROM cases LIMIT100
+
+To see tables
+```bash
+# in psql cli
+\dt *.*
 ```
 
 To use `docker-compose`, you may find this page [Getting started with Docker](https://github.com/openlawnz/openlawnz-api/wiki/%F0%9F%9B%B3%EF%B8%8F-Getting-started-with-Docker) useful.
@@ -64,7 +70,7 @@ node index.js --env=<env>
 ```
 
 ### Testing
-- When you make a pull request, `yarn test` will automatically start via Github Action. To run locally, use `yarn test`
+- When you make a pull request, `yarn test` will automatically start via Github Action. To run locally, use `yarn test` in your local terminal
 
 ## NOTICE
 
