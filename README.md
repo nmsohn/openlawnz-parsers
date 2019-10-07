@@ -24,8 +24,8 @@ Where you see the `env` option in a command, it will look for the corresponding 
 ## Installing
 
 ```bash
-yarn install
 # Do not run npm install
+yarn install
 ```
 
 ## Database Setup
