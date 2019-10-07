@@ -38,15 +38,17 @@ To setup a docker environment, you can find `docker.sh` at [openlawnz-orchestrat
 
 And check if it has correctly restored SQL dump file.
 ```bash
-# see all containers available
+# See all containers available
 docker ps -a
-# open psql cli
-docker exec -it [container-name/id] psql -U <username> -d <db-name>
+# Open psql cli and run docker execution with details
+docker exec -it <container-name/id> psql -U <username> -d <db-name>
+# If you ran the script from openlawnz-orchestration
+docker exec -it openlawnz-postgres psql -U postgres -d openlawnz_db
 ```
 
 To see tables
 ```bash
-# in psql cli
+# In psql cli
 \dt *.*
 ```
 
