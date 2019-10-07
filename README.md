@@ -41,7 +41,7 @@ And check if it has correctly restored SQL dump file.
 # see all containers available
 docker ps -a
 # open psql cli
-docker exec -it [container-name/id] psql -U postgres -d <db-name>
+docker exec -it [container-name/id] psql -U <username> -d <db-name>
 ```
 
 To see tables
