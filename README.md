@@ -1,13 +1,5 @@
 # openlawnz-parser
 
-## Parsers Quick Start for Openlaw NZ volunteers
-
-1. Ask for a copy of the OpenLaw NZ DB in the Slack channel for your own PostgreSQL server setup
-    * If you're interested in volunteering please get in touch!
-2. Follow "[General requirements](#general-requirements)", "[env](#env)" and "[Installing](#installing)" steps below
-3. Look at the [Database Setup](#database-setup) section
-3. Look at the [Parser](#parser) section
-
 ## General requirements
 
 - Yarn
@@ -30,12 +22,12 @@ yarn install
 
 ## Database Setup
 
+We use Docker to download and provision the OpenLaw NZ database. Simply run `docker.sh` from [openlawnz-orchestration](https://github.com/openlawnz/openlawnz-orchestration) and then update your `.env` file.
+
 There are 2 schemas:
 
 - `pipeline_cases`: this is populated by running the pipeline and is not affected by the parsers
 - `cases`: this is populated and mutated by running the parsers
-
-To setup a docker environment, you can find `docker.sh` at [openlawnz-orchestration](https://github.com/openlawnz/openlawnz-orchestration). Run the bash script.
 
 And check if it has correctly restored SQL dump file.
 ```bash
@@ -55,12 +47,12 @@ To see tables
 
 To use `docker-compose`, you may find this page [Getting started with Docker](https://github.com/openlawnz/openlawnz-api/wiki/%F0%9F%9B%B3%EF%B8%8F-Getting-started-with-Docker) useful.
 
-## Parser
+## Process
 
 - Each time a full run of the parsers is started the `cases` database is emptied and filled with the `pipeline_cases` data before running through each parser
 - Each script can be run individually
 
-### Running example
+## Running example
 
 ```bash
 cd parser
@@ -72,8 +64,13 @@ node parseCaseToCase.js --env=<env>
 node index.js --env=<env>
 ```
 
-### Testing
+## Testing
 - When you make a pull request, `yarn test` will automatically start via Github Action. To run locally, use `yarn test` in your local terminal.
+
+## For OpenLaw NZ volunteers
+
+* Ask for a copy of the OpenLaw NZ DB in the Slack channel
+    * If you're interested in volunteering please get in touch!
 
 ## NOTICE
 
