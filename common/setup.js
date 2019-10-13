@@ -47,17 +47,8 @@ module.exports = async (env, resumeSessionId) => {
 		client_encoding: 'UTF8'
 	};
 
-	const p_conn = {
-		host: process.env.DB_HOST,
-		user: process.env.DB_USER,
-		password: process.env.DB_PASS,
-		database: process.env.DB_NAME,
-		port: process.env.PORT,
-		client_encoding: 'UTF8'
-	};
-
 	let connection = pgPromise(conn);
-	let pipeline_connection = pgPromise(p_conn);
+	let pipeline_connection = pgPromise(conn);
 
 	return {
 		sessionId,
