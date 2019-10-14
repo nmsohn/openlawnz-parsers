@@ -48,14 +48,12 @@ module.exports = async (env, resumeSessionId) => {
 	};
 
 	let connection = pgPromise(conn);
-	let pipeline_connection = pgPromise(conn);
 
 	return {
 		sessionId,
 		cacheDir,
 		logDir,
 		pgPromise,
-		connection,
-		pipeline_connection
+		connection
 	};
 };
