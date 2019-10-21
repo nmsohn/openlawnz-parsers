@@ -1,57 +1,80 @@
 const { setLogFile, setLogDir, log } = require('../common/functions').makeLogger();
 
 const justiceMap = {
-	SentNote: /SENTENCING\sNOTES\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	Sent:/SENTENCE\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	SentRemarks:/SENTENCING\sREMARKS\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	Judge: /JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	SentNote: /^SENTENCING\sNOTES\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	SentHon:/^SENTENCE\sOF\sHON\sJUSTICE\s(.*)/,
+	Sent:/^SENTENCE\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	SentRemarks:/^SENTENCING\sREMARKS\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+
+	JudgeHonJustice:/^JUDGMENT\sOF\sHON\sJUSTICE\s(.*)/,
+	JudgeTheCourtDelivered: /^JUDGMENT\sOF\sTHE\sCOURT\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeJustice: /^JUDGMENT\sOF\sJUSTICE\s(.*)/,
+	JudgeCosts: /^COSTS\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
 	
-	JudgeSPCase: /JUDGEMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
-	JudgeCosts: /COSTS\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
+	// JudgeNo1WithDot: /^JUDGMENT\s\(NO.\s1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	// JudgeNo1WithNotDot: /^JUDGMENT\s\(NO\s1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeJust1: /^JUDGEMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	// JudgeJust1SPCase: /^JUDGMENT\s\(1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	
 	
-	JudgeNo1WithDot: /JUDGMENT\s\(NO.\s1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	JudgeNo1WithNotDot: /JUDGMENT\s\(NO\s1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	JudgeJust1: /JUDGEMENT\s\(1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	JudgeJust1SPCase: /JUDGMENT\s\(1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	
-	
-	JudgeNo2WithDot: /JUDGMENT\s\(NO.\s2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	
-	JudgeNo2WithNotDot: /JUDGMENT\s\(NO\s2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	JudgeJust2: /JUDGEMENT\s\(2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	// JudgeNo2WithDot: /^JUDGMENT\s\(NO.\s2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	// JudgeNo2WithNotDot: /^JUDGMENT\s\(NO\s2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	// JudgeJust2: /^JUDGEMENT\s\(2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	
 
-	JudgeNo3WithDot: /JUDGMENT\s\(NO.\s3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	JudgeNo3WithNotDot: /JUDGMENT\s\(NO\s3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	JudgeJust3: /JUDGEMENT\s\(3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	// JudgeNo3WithDot: /^JUDGMENT\s\(NO.\s3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	// JudgeNo3WithNotDot: /^JUDGMENT\s\(NO\s3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	// JudgeJust3: /^JUDGEMENT\s\(3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	
 
-	JudgeOnThePaper: /JUDGMENT\s\(ON\sTHE\sPAPERS\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	JudgeOral:/ORAL\sJUDGMENT\sOF\s(\w+)\sJ/,
-	JudgeTheCourt:/\(Given\sby\s(\S*)\sJ\)/,
-	JudgeInterim:/INTERIM\sJUDGMENT\sOF\sTHE\sHON\sJUSTICE\s([a-zA-Z0-9\s]*)/,
+	// JudgeOnThePaper: /^JUDGMENT\s\(ON\sTHE\sPAPERS\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeOralHon:/^ORAL\sJUDGMENT\sOF\sHON\sJUSTICE\s(.*)/,
+	JudgeOral:/^ORAL\sJUDGMENT\sOF\s(\w+)\sJ/,
+	JudgeTheCourt:/^\(Given\sby\s(\S*)\sJ\)/,
+	JudgeTheCourtSp1:/^JUDGMENT\sOF\sTHE\sCOURT\sON\sCOSTS\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeTheCourtSp2:/^JUDGMENT\sOF\sTHE\sCOURT\sAS\sTO\sCOSTS\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeTheCourtSp3:/^JUDGMENT\sOF\sCOURT\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeTheCourtSp4:/^JUDGMENT\sOF\sTHE\sCOURT\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeTheCourtSp5:/^JUDGMENT\sOF\sCOURT\sOF\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeInterim:/^INTERIM\sJUDGMENT\sOF\sTHE\sHON\sJUSTICE\s(.*)/,
 
-	Ruling:/RULING\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	Ruling1:/RULING\s1\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	Ruling2:/RULING\s2\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	Ruling:/^RULING\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	Ruling1:/^RULING\s1\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	Ruling2:/^RULING\s2\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+
+	Judge: /^JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeSP1: /^JUDGEMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
 };
 
 
 const assoJudge = {
-	JudgeAssociate: /JUDGMENT\sOF\sASSOCIATE\sJUDGE\s([a-zA-Z0-9\s]*)/,
-	OralRulingAsso:/ORAL\sRULING\sOF\sASSOCIATE\sJUDGE\s([a-zA-Z0-9\s]*)/,
+	JudgeAssociateOnCosts1: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\[.*\]/,
+	JudgeAssociateOnCosts2: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
+	JudgeAssociateOnCosts3: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sON\sCOSTS/,
 
-	JudgeNo1Asso: /JUDGMENT\s\(No.\s1\)\sOF\sASSOCIATE\sJUDGE\s([a-zA-Z0-9\s]*)/,
-	JudgeNo1AssoWithDotOral: /ORAL\sJUDGMENT\s\(No.1\)\sOF\sASSOCIATE\sJUDGE\s([a-zA-Z0-9\s]*)/,
+	JudgeAssociateSp1: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sUPON.*/,
+	JudgeAssociateSp2: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sON.*/,
+	JudgeAssociateSp3: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sUPON\sINTERLOCUTORY\sAPPLICATION\sBY\sPLAINTIFF\sFOR\sAN\sORDER\sFOR\sATTENDANCE\sBEFORE\sCOURT\sFOR\sEXAMINATION/,
+	JudgeAssociateSp4: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sRE\sPRIVILEGE/,
+	JudgeAssociateSp7: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sANNULLING\sBANKRUPTCY/,
+	JudgeAssociateSp8: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sAS\sTO.*/,
 
-	JudgeNo2Asso: /JUDGMENT\s\(No.\s2\)\sOF\sASSOCIATE\sJUDGE\s([a-zA-Z0-9\s]*)/,
-	JudgeNo2AssoWithDotOral: /ORAL\sJUDGMENT\s\(No.2\)\sOF\sASSOCIATE\sJUDGE\s([a-zA-Z0-9\s]*)/,
+	OralJudgeAssociateSp1: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
+	OralJudgeAssociate: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	
+	OralRulingAsso:/^ORAL\sRULING\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 
-	JudgeNo3Asso: /JUDGMENT\s\(No.\s3\)\sOF\sASSOCIATE\sJUDGE\s([a-zA-Z0-9\s]*)/,
-	JudgeNo3AssoWithDotOral: /ORAL\sJUDGMENT\s\(No.3\)\sOF\sASSOCIATE\sJUDGE\s([a-zA-Z0-9\s]*)/,
+	JudgeNo1Asso: /^JUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	JudgeNo1AssoWithDotOral: /^ORAL\sJUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+
+	// JudgeNo2Asso: /^JUDGMENT\s\(No.\s2\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	// JudgeNo2AssoWithDotOral: /^ORAL\sJUDGMENT\s\(No.2\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+
+	// JudgeNo3Asso: /^JUDGMENT\s\(No.\s3\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	// JudgeNo3AssoWithDotOral: /^ORAL\sJUDGMENT\s\(No.3\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+
+	JudgeAssociate: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 };
-
 
 
 
@@ -60,6 +83,7 @@ const assoJudge = {
  * 
  * id=5951 blank
  * id = 7282 blank
+ * id = 7423 blank
  * @param PostgresqlConnection connection
  */
 const run = async (pgPromise, connection, logDir) => {
@@ -79,7 +103,22 @@ const run = async (pgPromise, connection, logDir) => {
 	function extractJustices(justices){
 		
 		const valuesToRemove = ['and','JJ' ];
-		var lastTwo = justices.pop().trim().split(' ').filter(lastTwo =>  !valuesToRemove.includes(lastTwo)   );
+		var lastElement = justices.pop().trim();
+		var lastTwo;
+		
+		if(lastElement.includes('and') && !lastElement.includes('JJ') ){
+			lastTwo = lastElement.split('and');
+		}
+		else if(lastElement.includes('&') && !lastElement.includes('JJ') ){
+			lastTwo = lastElement.split('&');
+		}
+		else if(lastElement.includes('&') && lastElement.includes('JJ') ){
+			lastTwo = lastElement.split('&');
+		}
+		else{
+			lastTwo = lastElement.split(' ').filter(lastTwo =>  !valuesToRemove.includes(lastTwo)   );
+		}
+
 		return justices.concat(lastTwo);
 	};
 
@@ -97,7 +136,7 @@ const run = async (pgPromise, connection, logDir) => {
 
 	}
 
-    const cases = await connection.any('SELECT * FROM cases.cases  limit 1000');
+    const cases = await connection.any('SELECT * FROM cases.cases where  id = 13284');
 	const valuesToRemove = ['','Introduction' ];
 	
     cases.forEach(
@@ -136,37 +175,67 @@ const run = async (pgPromise, connection, logDir) => {
 			if(parsed) break;
 			
 			/**
-			 *  11175
+			 * multiple lines
+			 *  11175 20096 
+			 * 7165 Court:\r   \rAppearances: no \rCounsel:
 			 */
 			else if (case_text[i].match('Court:\r') && !case_text[i].match('and') ) {
 				
 				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
+				// console.log(JSON.stringify(caseString));
 				var courtIndex = caseString.indexOf('Court:\r');
 				var counselIndex = caseString.indexOf('\rCounsel:');
-				
-				var judgeStr = caseString.substring(courtIndex+7, counselIndex);
-				var judges = judgeStr.split(/Judge/);
+			
+				if (counselIndex == -1) counselIndex = caseString.indexOf('\rAppearances:');
+				if (counselIndex == -1) counselIndex = caseString.indexOf('Judgment:');
 
-				judges.forEach(element =>{
-					var judge = element.replace(',','').trim();
-					if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
-					else insertResult(judge, caseID, 5);
+				var judgeStr = caseString.substring(courtIndex+7, counselIndex);
+				
+				// remove year
+				if (judgeStr.match(/\d{4}/ )) judgeStr = judgeStr.substring(judgeStr.match(/\d{4}/ ).index+4);
 					
-				});
-				parsed = true;
-				break;
+				
+				// console.log(JSON.stringify(judgeStr) );
+				
+				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
+					var justices = extractJustices(judgeStr.split(','));
+					console.log(justices)
+					justices.forEach(element =>{
+						var judge = element.trim();
+						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
+						else insertResult(judge, caseID, 3);
+							
+					});
+					parsed = true;
+					break;
+				}
+				else if(judgeStr.match(/Judge/)){
+					var judges = judgeStr.split(/Judge/);
+					judges.forEach(element =>{
+						var judge = element.replace(',','').trim();
+						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+						else insertResult(judge, caseID, 5);
+						
+					});
+					parsed = true;
+					break;
+				}
+				
 			}
 			
 			else if (case_text[i].match('Court:\r') ) {
 				
 				var splitByR = String(case_text[i] + '\r'+ case_text[i+1]).split('\r');
+				
 				var courtIndex = splitByR.indexOf('Court:');
 				var element = splitByR[courtIndex+1].split(',') ;
+				
 				var justices = extractJustices([...element]);
-
+				
 				justices.forEach(element =>{
 					var judge = element.trim();
-					if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
+					if(judge.includes(' P'))insertResult(judge.replace(' P', '').trim(), caseID, 2);
+					else if(judge.includes(' J'))insertResult(judge.replace(' J', '').trim(), caseID, 3);
 					else insertResult(judge, caseID, 3);
 						
 				});
@@ -185,26 +254,14 @@ const run = async (pgPromise, connection, logDir) => {
 	  
 	parsedResult.forEach(logMapElements);
 
-	/**
-	 * 5951, blank
-  21836,
-  7282, blank
-  7423, blank
-  13293,
-  2201,
-  11429,
-  7772,
-  11535,
-  11613,
-  11649,
-  11661,
-  5243,
-  9387,
-  11736,
-  11776,
-  26133
-	 */
-	console.log(unParsedResult);
+	const fs = require('fs');
+	let outputData = unParsedResult.toString();
+	
+	fs.writeFileSync('ParseJudgeBugCases.txt',outputData, function (err) {
+		if (err) 
+			return console.log(err);
+	}); 
+	
 	console.log('Done');
 };
 
