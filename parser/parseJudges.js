@@ -5,29 +5,18 @@ const justiceMap = {
 	SentHon:/^SENTENCE\sOF\sHON\sJUSTICE\s(.*)/,
 	Sent:/^SENTENCE\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	SentRemarks:/^SENTENCING\sREMARKS\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	SentRemarksSp1:/^\[.*\]\sSENTENCING\sREMARKS\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
 	JudgeHonJustice:/^JUDGMENT\sOF\sHON\sJUSTICE\s(.*)/,
+	JudgeHonJusticeSp1:/^JUDGMENT\sOF\sHON\.\sJUSTICE\s(.*)/,
 	JudgeTheCourtDelivered: /^JUDGMENT\sOF\sTHE\sCOURT\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeJustice: /^JUDGMENT\sOF\sJUSTICE\s(.*)/,
 	JudgeCosts: /^COSTS\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
 	
-	// JudgeNo1WithDot: /^JUDGMENT\s\(NO.\s1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	// JudgeNo1WithNotDot: /^JUDGMENT\s\(NO\s1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	JudgeJust1: /^JUDGEMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	// JudgeJust1SPCase: /^JUDGMENT\s\(1\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	
-	
-	// JudgeNo2WithDot: /^JUDGMENT\s\(NO.\s2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	// JudgeNo2WithNotDot: /^JUDGMENT\s\(NO\s2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	// JudgeJust2: /^JUDGEMENT\s\(2\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	
 
-	// JudgeNo3WithDot: /^JUDGMENT\s\(NO.\s3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	// JudgeNo3WithNotDot: /^JUDGMENT\s\(NO\s3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	// JudgeJust3: /^JUDGEMENT\s\(3\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	
+	JudgeNumber1: /^JUDGEMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeNumber2: /^JUDGMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
-	// JudgeOnThePaper: /^JUDGMENT\s\(ON\sTHE\sPAPERS\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeOralHon:/^ORAL\sJUDGMENT\sOF\sHON\sJUSTICE\s(.*)/,
 	JudgeOral:/^ORAL\sJUDGMENT\sOF\s(\w+)\sJ/,
 	JudgeTheCourt:/^\(Given\sby\s(\S*)\sJ\)/,
@@ -42,8 +31,18 @@ const justiceMap = {
 	Ruling1:/^RULING\s1\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	Ruling2:/^RULING\s2\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
-	Judge: /^JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	
+	ResultJudgement: /^RESULT\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	ReservedJudgement:/^RESERVED\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	ReservedJudgementSP1:/^\(.*\)\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	ReservedCostsJudgement:/^RESERVED\sCOSTS\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+
+	RecallJudge: /^RECALL\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeSP1: /^JUDGEMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
+	JudgeSP2: /^\[.*\]\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeSP3: /^\[.*\]\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ\(.*\)/,
+	Judge: /^JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	
 };
 
 
@@ -61,18 +60,13 @@ const assoJudge = {
 
 	OralJudgeAssociateSp1: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
 	OralJudgeAssociate: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
-	
+	OralDecisionAssociate: /^ORAL\sDECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	OralRulingAsso:/^ORAL\sRULING\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 
 	JudgeNo1Asso: /^JUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	JudgeNo1AssoWithDotOral: /^ORAL\sJUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 
-	// JudgeNo2Asso: /^JUDGMENT\s\(No.\s2\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
-	// JudgeNo2AssoWithDotOral: /^ORAL\sJUDGMENT\s\(No.2\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
-
-	// JudgeNo3Asso: /^JUDGMENT\s\(No.\s3\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
-	// JudgeNo3AssoWithDotOral: /^ORAL\sJUDGMENT\s\(No.3\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
-
+	DecisionAssociate: /^DECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	JudgeAssociate: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 };
 
@@ -136,7 +130,7 @@ const run = async (pgPromise, connection, logDir) => {
 
 	}
 
-    const cases = await connection.any('SELECT * FROM cases.cases where  id = 13284');
+    const cases = await connection.any('SELECT * FROM cases.cases ');
 	const valuesToRemove = ['','Introduction' ];
 	
     cases.forEach(
@@ -199,7 +193,7 @@ const run = async (pgPromise, connection, logDir) => {
 				
 				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
 					var justices = extractJustices(judgeStr.split(','));
-					console.log(justices)
+					// console.log(justices)
 					justices.forEach(element =>{
 						var judge = element.trim();
 						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
@@ -223,6 +217,7 @@ const run = async (pgPromise, connection, logDir) => {
 				
 			}
 			
+			
 			else if (case_text[i].match('Court:\r') ) {
 				
 				var splitByR = String(case_text[i] + '\r'+ case_text[i+1]).split('\r');
@@ -242,6 +237,54 @@ const run = async (pgPromise, connection, logDir) => {
 				parsed = true;
 				break;
 			}
+			/**
+			 * 27222 court:\t
+			 */
+			else if (case_text[i].match('Court:\t') ) {
+				
+				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
+				//console.log(JSON.stringify(caseString));
+				var courtIndex = caseString.indexOf('Court:\t');
+				var counselIndex = caseString.indexOf('Counsel:');
+			
+				if (counselIndex == -1) counselIndex = caseString.indexOf('Appearances:');
+				
+				if (counselIndex == -1) counselIndex = caseString.indexOf('Judgment:');
+
+				var judgeStr = caseString.substring(courtIndex+7, counselIndex);
+				
+				// remove year
+				if (judgeStr.match(/\d{4}/ )) judgeStr = judgeStr.substring(judgeStr.match(/\d{4}/ ).index+4);
+					
+				
+				// console.log(JSON.stringify(judgeStr) );
+				
+				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
+					var justices = extractJustices(judgeStr.split(','));
+					// console.log(justices)
+					justices.forEach(element =>{
+						var judge = element.trim();
+						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
+						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+						else insertResult(judge, caseID, 3);
+							
+					});
+					parsed = true;
+					break;
+				}
+				else if(judgeStr.match(/Judge/)){
+					var judges = judgeStr.split(/Judge/);
+					judges.forEach(element =>{
+						var judge = element.replace(',','').trim();
+						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+						else insertResult(judge, caseID, 5);
+						
+					});
+					parsed = true;
+					break;
+				}
+			}
+			
 		}
 		
 	if(!parsed) unParsedResult.push(caseID);
@@ -254,6 +297,7 @@ const run = async (pgPromise, connection, logDir) => {
 	  
 	parsedResult.forEach(logMapElements);
 
+	console.log( `${unParsedResult.length} cases unparsed`)
 	const fs = require('fs');
 	let outputData = unParsedResult.toString();
 	
