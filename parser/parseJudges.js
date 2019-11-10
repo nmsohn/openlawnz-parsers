@@ -1,7 +1,21 @@
 const { setLogFile, setLogDir, log } = require('../common/functions').makeLogger();
-
+/**
+ * id=5951 blank
+ * id = 7282 blank
+ * id = 7423 blank
+ * id = 7772 blank
+ * 7817 H
+ * id = 30040 TIJDGMENT OF JUDGE K D KELLY should be
+ * id = 29118 JUDGMENT OF ASSOCIATE FAIRE
+ */
 const justiceMap = {
+	Directions: /^DIRECTIONS\sOF\s(.*)\sJ/,
+	Decision: /^DECISION\sOF\s(.*)\sJ/,
+	DecisionSp1: /^.*DECISION\sOF\s(.*)\sJ/,
 	SentNote: /^SENTENCING\sNOTES\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	SentNoteSP1:/NOTES\sON\sSENTENCE\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	SentNoteSp2: /^.*SENTENCING\sNOTES\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	ReSentNote: /^RE-SENTENCING\sNOTES\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	SentHon:/^SENTENCE\sOF\sHON\sJUSTICE\s(.*)/,
 	Sent:/^SENTENCE\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	SentRemarks:/^SENTENCING\sREMARKS\sOF\s([a-zA-Z0-9\s]*)\sJ/,
@@ -9,16 +23,24 @@ const justiceMap = {
 
 	JudgeHonJustice:/^JUDGMENT\sOF\sHON\sJUSTICE\s(.*)/,
 	JudgeHonJusticeSp1:/^JUDGMENT\sOF\sHON\.\sJUSTICE\s(.*)/,
+	JudgeHonJusticeSp2:/^RESERVED\sJUDGMENT\sOF\sHON\.\sJUSTICE\s(.*)/,
+	JudgeHonJusticeSp3:/^.*JUDGMENT\sOF\sHON\.\sJUSTICE\s(.*)/,
+
 	JudgeTheCourtDelivered: /^JUDGMENT\sOF\sTHE\sCOURT\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeJustice: /^JUDGMENT\sOF\sJUSTICE\s(.*)/,
 	JudgeCosts: /^COSTS\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
-	
+	JudgeCostsSp1:/^JUDGMENT\sAS\sTO\sCOSTS\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeCostsSp2: /^COSTS\sJUDGMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeCostsSp3: /^COSTS\sJUDGMENT\s.*\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
 	JudgeNumber1: /^JUDGEMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeNumber2: /^JUDGMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
+
 	JudgeOralHon:/^ORAL\sJUDGMENT\sOF\sHON\sJUSTICE\s(.*)/,
-	JudgeOral:/^ORAL\sJUDGMENT\sOF\s(\w+)\sJ/,
+	JudgeOral:/^ORAL\sJUDGMENT\sOF\s(.*)\sJ/,
+	JudgeOralSP1:/ORAL\sJUDGMENT\s(.*)OF\sJ/,
+
 	JudgeTheCourt:/^\(Given\sby\s(\S*)\sJ\)/,
 	JudgeTheCourtSp1:/^JUDGMENT\sOF\sTHE\sCOURT\sON\sCOSTS\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeTheCourtSp2:/^JUDGMENT\sOF\sTHE\sCOURT\sAS\sTO\sCOSTS\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
@@ -28,25 +50,36 @@ const justiceMap = {
 	JudgeInterim:/^INTERIM\sJUDGMENT\sOF\sTHE\sHON\sJUSTICE\s(.*)/,
 
 	Ruling:/^RULING\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	Ruling1:/^RULING\s1\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	Ruling2:/^RULING\s2\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	Ruling1:/^RULING\s.*\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	Ruling2:/^.*RULING\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	RulingSp3:/^.*RULING\s.*\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
-	
 	ResultJudgement: /^RESULT\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	ReservedJudgement:/^RESERVED\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	ReservedJudgementSP1:/^\(.*\)\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	ReservedCostsJudgement:/^RESERVED\sCOSTS\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
 	RecallJudge: /^RECALL\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+
+	
 	JudgeSP1: /^JUDGEMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
 	JudgeSP2: /^\[.*\]\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeSP3: /^\[.*\]\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ\(.*\)/,
-	Judge: /^JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
-	
+	//29162
+	JudgeSP4: /\(.*\)\sJUDGMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeSP5: /^.*JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeSP6: /^.*JUDGMENT.*\sOF\s([a-zA-Z0-9\s]*)\sJ/,
+	JudgeSP7: /^JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\s\(.*\)/,
+	JudgeSP8: /^JUDGMENT\sOF\sJUDGE\s(.*)/,
+	JudgeSP9: /^JUDGMENT\sOF\sJUDGE\s(.*)\s\[.*\]/,
+	JudgeSP10: /^JUDGMENT\sOF\s(.*)/,
+	Judge: /^JUDGMENT\sOF\s(.*)\sJ/,
 };
 
 
 const assoJudge = {
+	
+
 	JudgeAssociateOnCosts1: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\[.*\]/,
 	JudgeAssociateOnCosts2: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
 	JudgeAssociateOnCosts3: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sON\sCOSTS/,
@@ -57,20 +90,38 @@ const assoJudge = {
 	JudgeAssociateSp4: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sRE\sPRIVILEGE/,
 	JudgeAssociateSp7: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sANNULLING\sBANKRUPTCY/,
 	JudgeAssociateSp8: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sAS\sTO.*/,
+	JudgeAssociateSp9: /^JUDGMENT\sAS\sTO\sCOSTS\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	JudgeAssociateSp10: /^.*JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	JudgeAssociateSp11: /^JUDGMENT\sFOR\sASSOCIATE\sJUDGE\s(.*)/,
+	JudgeAssociateSp12: /^.*JUDGMENT\sFOR\sASSOCIATE\sJUDGE\s(.*)/,
 
-	OralJudgeAssociateSp1: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
 	OralJudgeAssociate: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	OralJudgeAssociateSp1: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
+	OralJudgeAssociateSp2: /^ORAL\sJUDGEMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	OralDecisionAssociate: /^ORAL\sDECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	OralRulingAsso:/^ORAL\sRULING\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+
+	RulingAsso1:/^RULING\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	RulingAsso2:/^.*RULING\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 
 	JudgeNo1Asso: /^JUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	JudgeNo1AssoWithDotOral: /^ORAL\sJUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 
 	DecisionAssociate: /^DECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	DecisionAssociateSp1: /REASONS\sFOR\sDECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	Orders:/ORDERS\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	JudgeAssociate: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 };
 
-
+const localJudge = {
+	
+	ReservedJudgement1:/^RESERVED\sJUDGMENT\sOF\sJUDGE\s([a-zA-Z0-9\s]*)/,
+	Judge: /^JUDGMENT\sOF\sJUDGE\s([a-zA-Z0-9\s]*)/,
+	Decision: /^DECISION\sOF\sJUDGE\s([a-zA-Z0-9\s]*)/,
+	Minute:/^MINUTE\sOF\sJUDGE\s([a-zA-Z0-9\s]*)/,
+	Court:/^Court:\tDistrict\sCourt\sJudge\s([a-zA-Z0-9\s]*)/,
+	
+};
 
 /**
  * Parse Invalid Characters
@@ -78,6 +129,9 @@ const assoJudge = {
  * id=5951 blank
  * id = 7282 blank
  * id = 7423 blank
+ * id = 7772 blank
+ * id = 30040 TIJDGMENT OF JUDGE K D KELLY should be
+ * id = 29118 JUDGMENT OF ASSOCIATE FAIRE
  * @param PostgresqlConnection connection
  */
 const run = async (pgPromise, connection, logDir) => {
@@ -116,6 +170,12 @@ const run = async (pgPromise, connection, logDir) => {
 		return justices.concat(lastTwo);
 	};
 
+	/**
+	 * 
+	 * @param {*} judgeFname 
+	 * @param {*} caseID 
+	 * @param {*} titleID 
+	 */
 	function insertResult(judgeFname, caseID, titleID){
 	
 		if(!parsedResult.has(judgeFname)){
@@ -130,7 +190,7 @@ const run = async (pgPromise, connection, logDir) => {
 
 	}
 
-    const cases = await connection.any('SELECT * FROM cases.cases ');
+    const cases = await connection.any('SELECT * FROM cases.cases ; ');
 	const valuesToRemove = ['','Introduction' ];
 	
     cases.forEach(
@@ -143,6 +203,7 @@ const run = async (pgPromise, connection, logDir) => {
 		var parsed = false;
         for( var i = 0; i < case_text.length; i++){ 
 			
+			// assojudge cases with judge title_id=5
 			for (var key in assoJudge) {
 				if(case_text[i].match( assoJudge[key]) ){
 					
@@ -152,11 +213,9 @@ const run = async (pgPromise, connection, logDir) => {
 					break;
 				}
 			}
-
 			if(parsed) break;
-			
+			// justices cases with judge title_id=3
 			for (var key in justiceMap) {
-				
 				if(case_text[i].match( justiceMap[key]) ){
 					
 					var temp = case_text[i].match(justiceMap[key]);
@@ -165,15 +224,28 @@ const run = async (pgPromise, connection, logDir) => {
 					break;
 				}
 			}
-			
 			if(parsed) break;
-			
+			// local cases with judge title_id=7
+			for (var key in localJudge) {
+				if(case_text[i].match( localJudge[key]) ){
+					var temp = case_text[i].match(localJudge[key]);
+					insertResult([...temp][1], element.id, 7);
+					parsed = true;
+					break;
+				}
+			}
+			// console.log(JSON.stringify(case_text[i]));
+			// console.log(case_text[i].match( justiceMap.JudgeSP4 ));
+			if(parsed) break;
+			//id = 29865"Coram:\tGlazebrook J Chambers J O'Regan J"
+		
 			/**
 			 * multiple lines
 			 *  11175 20096 
 			 * 7165 Court:\r   \rAppearances: no \rCounsel:
+			 * 29865 Coram: Glazebrook 
 			 */
-			else if (case_text[i].match('Court:\r') && !case_text[i].match('and') ) {
+			else if ( case_text[i].match('Court:\r') && !case_text[i].match('and') ) {
 				
 				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
 				// console.log(JSON.stringify(caseString));
@@ -214,9 +286,69 @@ const run = async (pgPromise, connection, logDir) => {
 					parsed = true;
 					break;
 				}
+				else{
+					var justices = judgeStr.trim().split(/\s/);
+					for (var i = 0; i < justices.length; i=i+2) {
+						if(justices[i+1] == 'J') insertResult(justices[i], caseID, 3);
+						else if(justices[i+1] == 'P') insertResult(justices[i], caseID, 2);
+						else if(justices[i+1] == 'CJ') insertResult(justices[i], caseID, 1);
+					}
+					parsed = true;
+					break;
+				}
 				
 			}
-			
+
+			else if ( case_text[i].match('Coram:\t') && !case_text[i].match('and') ) {
+				
+				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
+				// console.log(JSON.stringify(caseString));
+				var courtIndex = caseString.indexOf('Coram:\t');
+	
+				var counselIndex = caseString.indexOf('\rCounsel:');
+				if (counselIndex == -1) counselIndex = caseString.indexOf('Appearances:');
+				if (counselIndex == -1) counselIndex = caseString.indexOf('Judgment:');
+
+				var judgeStr = caseString.substring(courtIndex+7, counselIndex);
+				
+				// remove year
+				if (judgeStr.match(/\d{4}/ )) judgeStr = judgeStr.substring(judgeStr.match(/\d{4}/ ).index+4);
+					
+				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
+					var justices = extractJustices(judgeStr.split(','));
+					// console.log(justices)
+					justices.forEach(element =>{
+						var judge = element.trim();
+						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
+						else insertResult(judge, caseID, 3);
+							
+					});
+					parsed = true;
+					break;
+				}
+				else if(judgeStr.match(/Judge/)){
+					var judges = judgeStr.split(/Judge/);
+					judges.forEach(element =>{
+						var judge = element.replace(',','').trim();
+						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+						else insertResult(judge, caseID, 5);
+						
+					});
+					parsed = true;
+					break;
+				}
+				else{
+					var justices = judgeStr.trim().split(/\s/);
+					for (var i = 0; i < justices.length; i=i+2) {
+						if(justices[i+1] == 'J') insertResult(justices[i], caseID, 3);
+						else if(justices[i+1] == 'P') insertResult(justices[i], caseID, 2);
+						else if(justices[i+1] == 'CJ') insertResult(justices[i], caseID, 1);
+					}
+					parsed = true;
+					break;
+				}
+				
+			}
 			
 			else if (case_text[i].match('Court:\r') ) {
 				
@@ -237,9 +369,8 @@ const run = async (pgPromise, connection, logDir) => {
 				parsed = true;
 				break;
 			}
-			/**
-			 * 27222 court:\t
-			 */
+
+			// Example: 27222 court:\t
 			else if (case_text[i].match('Court:\t') ) {
 				
 				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
@@ -255,9 +386,6 @@ const run = async (pgPromise, connection, logDir) => {
 				
 				// remove year
 				if (judgeStr.match(/\d{4}/ )) judgeStr = judgeStr.substring(judgeStr.match(/\d{4}/ ).index+4);
-					
-				
-				// console.log(JSON.stringify(judgeStr) );
 				
 				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
 					var justices = extractJustices(judgeStr.split(','));
@@ -291,13 +419,7 @@ const run = async (pgPromise, connection, logDir) => {
 
 	});
 	
-	function logMapElements(value, key, map) {
-		console.log(`[${key}] = ${value[0]} = ${value[1]}`);
-	}
-	  
-	parsedResult.forEach(logMapElements);
 
-	console.log( `${unParsedResult.length} cases unparsed`)
 	const fs = require('fs');
 	let outputData = unParsedResult.toString();
 	
@@ -305,7 +427,20 @@ const run = async (pgPromise, connection, logDir) => {
 		if (err) 
 			return console.log(err);
 	}); 
+
+	function logMapElements(value, key, map) {
+		console.log(`[${key}] = ${value[0]} = ${value[1]}`);
+		// var str = `[${key}] = ${value[0]} = ${value[1]}\n`
+		// fs.appendFileSync('ParseJudgeBugCases.txt',str, function (err) {
+		// 	if (err) 
+		// 		return console.log(err);
+		// }); 
+	}
+	  
+	parsedResult.forEach(logMapElements);
+
 	
+	console.log( `${unParsedResult.length} cases unparsed`);
 	console.log('Done');
 };
 
