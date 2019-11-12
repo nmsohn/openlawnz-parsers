@@ -164,7 +164,7 @@ const run = async (pgPromise, connection, logDir) => {
 			lastTwo = lastElement.split('&');
 		}
 		else{
-			lastTwo = lastElement.split(' ').filter(lastTwo =>  !valuesToRemove.includes(lastTwo)   );
+			lastTwo = lastElement.split(' ').filter(lastTwo =>  !valuesToRemove.includes(lastTwo) );
 		}
 
 		return justices.concat(lastTwo);
@@ -418,7 +418,6 @@ const run = async (pgPromise, connection, logDir) => {
 	if(!parsed) unParsedResult.push(caseID);
 
 	});
-	
 
 	const fs = require('fs');
 	let outputData = unParsedResult.toString();
@@ -428,18 +427,46 @@ const run = async (pgPromise, connection, logDir) => {
 			return console.log(err);
 	}); 
 
-	function logMapElements(value, key, map) {
-		console.log(`[${key}] = ${value[0]} = ${value[1]}`);
-		// var str = `[${key}] = ${value[0]} = ${value[1]}\n`
-		// fs.appendFileSync('ParseJudgeBugCases.txt',str, function (err) {
-		// 	if (err) 
-		// 		return console.log(err);
-		// }); 
-	}
-	  
-	parsedResult.forEach(logMapElements);
+	var judgeInsertQueries = [];
+	var judgeRelationInsertQueries = [];
 
-	
+	var judgeID = 1;
+	var judgeRelationID = 1;
+	parsedResult.forEach(
+		(value,key)=>{
+			key = key.replace('\'', '\'\'');
+			if(key.length > 20 || key.length <2 || key.toLowerCase() == "the" || key.toLowerCase() == "judge" 
+			|| key.toLowerCase() == "er" || key.toLowerCase() == "hon" || key.toLowerCase() == "court"){
+				console.log(`[${key}] = ${value[0]} = ${value[1]}`);
+				
+			}else{
+				console.log(`INSERT INTO cases.judges(id,last_name) VALUES(\'${judgeID}\', \'${key}\') ON CONFLICT DO NOTHING`);
+				judgeInsertQueries.push(`INSERT INTO cases.judges(id,last_name) VALUES (\'${judgeID}\', \'${key}\') ON CONFLICT DO NOTHING;`);
+
+				value[1].forEach(
+					titleID =>{
+						console.log(`INSERT INTO judges_title_relation (id, judge_id， judge_title_id) 
+						VALUES ('${judgeRelationID}', '${judgeID}', '${titleID}') ON CONFLICT DO NOTHING`);
+						judgeRelationInsertQueries.push(`INSERT INTO cases.judges_title_relation (id, judge_id, judge_title_id) 
+						VALUES ('${judgeRelationID}', '${judgeID}', '${titleID}') ON CONFLICT DO NOTHING`);
+						judgeRelationID++;
+					}
+				);
+				judgeID++;
+			}
+	});
+
+
+	console.log('Insert judge table', judgeInsertQueries.length, 'Insert judge relation table', judgeRelationInsertQueries.length);
+	if (judgeInsertQueries.length > 0) {
+		await connection.multi(judgeInsertQueries.join(';'));
+
+	}
+
+	if (judgeRelationInsertQueries.length > 0) {
+		await connection.multi(judgeRelationInsertQueries.join(';'));
+	}
+
 	console.log( `${unParsedResult.length} cases unparsed`);
 	console.log('Done');
 };
