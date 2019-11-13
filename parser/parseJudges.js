@@ -7,6 +7,8 @@ const { setLogFile, setLogDir, log } = require('../common/functions').makeLogger
  * 7817 H
  * id = 30040 TIJDGMENT OF JUDGE K D KELLY should be
  * id = 29118 JUDGMENT OF ASSOCIATE FAIRE
+ * 11614 'SENTENCING NOTES OF OF GENDALL J',
+ * node --max-old-space-size=4096 .\parseJudges.js --env==test
  */
 const justiceMap = {
 	Directions: /^DIRECTIONS\sOF\s(.*)\sJ/,
@@ -25,6 +27,7 @@ const justiceMap = {
 	JudgeHonJusticeSp1:/^JUDGMENT\sOF\sHON\.\sJUSTICE\s(.*)/,
 	JudgeHonJusticeSp2:/^RESERVED\sJUDGMENT\sOF\sHON\.\sJUSTICE\s(.*)/,
 	JudgeHonJusticeSp3:/^.*JUDGMENT\sOF\sHON\.\sJUSTICE\s(.*)/,
+	JudgeHonJusticeSp4:/^ORAL\sJUDGMENT\sOF\sJUDGMENT\sOF\sHON\sJUSTICE\s(.*)/,
 
 	JudgeTheCourtDelivered: /^JUDGMENT\sOF\sTHE\sCOURT\sDELIVERED\sBY\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeJustice: /^JUDGMENT\sOF\sJUSTICE\s(.*)/,
@@ -72,32 +75,28 @@ const justiceMap = {
 	JudgeSP7: /^JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\s\(.*\)/,
 	JudgeSP8: /^JUDGMENT\sOF\sJUDGE\s(.*)/,
 	JudgeSP9: /^JUDGMENT\sOF\sJUDGE\s(.*)\s\[.*\]/,
-	JudgeSP10: /^JUDGMENT\sOF\s(.*)/,
+	// JudgeSP10: /^JUDGMENT\sOF\s(.*)/,
+	JudgeSP11: /^JUDGMENT\sOF\s(.*)\sJ\s.*/,
 	Judge: /^JUDGMENT\sOF\s(.*)\sJ/,
 };
 
 
 const assoJudge = {
-	
-
 	JudgeAssociateOnCosts1: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\[.*\]/,
 	JudgeAssociateOnCosts2: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
 	JudgeAssociateOnCosts3: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sON\sCOSTS/,
 
-	JudgeAssociateSp1: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sUPON.*/,
-	JudgeAssociateSp2: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sON.*/,
-	JudgeAssociateSp3: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sUPON\sINTERLOCUTORY\sAPPLICATION\sBY\sPLAINTIFF\sFOR\sAN\sORDER\sFOR\sATTENDANCE\sBEFORE\sCOURT\sFOR\sEXAMINATION/,
-	JudgeAssociateSp4: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sRE\sPRIVILEGE/,
-	JudgeAssociateSp7: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sANNULLING\sBANKRUPTCY/,
-	JudgeAssociateSp8: /^JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\sAS\sTO.*/,
-	JudgeAssociateSp9: /^JUDGMENT\sAS\sTO\sCOSTS\sOF\sASSOCIATE\sJUDGE\s(.*)/,
-	JudgeAssociateSp10: /^.*JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
-	JudgeAssociateSp11: /^JUDGMENT\sFOR\sASSOCIATE\sJUDGE\s(.*)/,
-	JudgeAssociateSp12: /^.*JUDGMENT\sFOR\sASSOCIATE\sJUDGE\s(.*)/,
+	JudgeAssociateSp1: /^.*JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
+	JudgeAssociateSp2: /^.*JUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	
+	JudgeAssociateSp3: /^JUDGMENT\sFOR\sASSOCIATE\sJUDGE\s(.*)/,
+	JudgeAssociateSp4: /^.*JUDGMENT\sFOR\sASSOCIATE\sJUDGE\s(.*)/,
 
 	OralJudgeAssociate: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
-	OralJudgeAssociateSp1: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
+	OralJudgeAssociateSp1: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s.*/,
+
 	OralJudgeAssociateSp2: /^ORAL\sJUDGEMENT\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+	OralJudgeAssociateSp3: /^ORAL\sJUDGMENT\sOF\sASSOCIATE\sJUDGE\s(.*)\s\(.*\)/,
 	OralDecisionAssociate: /^ORAL\sDECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	OralRulingAsso:/^ORAL\sRULING\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 
@@ -106,6 +105,9 @@ const assoJudge = {
 
 	JudgeNo1Asso: /^JUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	JudgeNo1AssoWithDotOral: /^ORAL\sJUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+
+	JudgeAssociateReserved:/^RESERVED\sJUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
+
 
 	DecisionAssociate: /^DECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	DecisionAssociateSp1: /REASONS\sFOR\sDECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
@@ -172,25 +174,33 @@ const run = async (pgPromise, connection, logDir) => {
 
 	/**
 	 * 
-	 * @param {*} judgeFname 
+	 * @param {*} judgeName 
 	 * @param {*} caseID 
 	 * @param {*} titleID 
 	 */
-	function insertResult(judgeFname, caseID, titleID){
+	function insertResult(judgeName, caseID, titleID){
 	
-		if(!parsedResult.has(judgeFname)){
-			parsedResult.set(judgeFname, [ [caseID], [titleID] ] );
+		if(!parsedResult.has(judgeName)){
+			parsedResult.set(judgeName, [ [caseID], [titleID] ] );
 		}else{
-			var casesApper = parsedResult.get(judgeFname)[0];
+			var casesApper = parsedResult.get(judgeName)[0];
 			casesApper.push(caseID);
-			var titles = parsedResult.get(judgeFname)[1];
+			var titles = parsedResult.get(judgeName)[1];
 			if (!titles.includes(titleID)) titles.push(titleID);
-			parsedResult.set(judgeFname, [casesApper, titles]);
+			parsedResult.set(judgeName, [casesApper, titles]);
 		}
 
 	}
 
-    const cases = await connection.any('SELECT * FROM cases.cases ; ');
+	function findTitleInsertReuslt(judgeString, caseID, AssociateJudge){
+
+		if(judgeString.includes('P') ) insertResult(judgeString.replace('P', '').trim(), caseID, 2);
+		else if(judgeString.includes('CJ')) insertResult(judgeString.replace('CJ', '').trim(), caseID, 1);
+		else if(judgeString.includes('J')) insertResult(judgeString.replace('J', '').trim(), caseID, 3);
+		else if(AssociateJudge) insertResult(judgeString, caseID, 5);
+	}
+
+    const cases = await connection.any('SELECT * FROM cases.cases ');
 	const valuesToRemove = ['','Introduction' ];
 	
     cases.forEach(
@@ -206,7 +216,7 @@ const run = async (pgPromise, connection, logDir) => {
 			// assojudge cases with judge title_id=5
 			for (var key in assoJudge) {
 				if(case_text[i].match( assoJudge[key]) ){
-					
+					console.log(case_text[i].match( assoJudge[key]), assoJudge[key])
 					var temp = case_text[i].match(assoJudge[key]);
 					insertResult([...temp][1], element.id, 5);
 					parsed = true;
@@ -217,7 +227,7 @@ const run = async (pgPromise, connection, logDir) => {
 			// justices cases with judge title_id=3
 			for (var key in justiceMap) {
 				if(case_text[i].match( justiceMap[key]) ){
-					
+					console.log(case_text[i].match( justiceMap[key]), justiceMap[key])
 					var temp = case_text[i].match(justiceMap[key]);
 					insertResult([...temp][1], element.id, 3);
 					parsed = true;
@@ -227,18 +237,19 @@ const run = async (pgPromise, connection, logDir) => {
 			if(parsed) break;
 			// local cases with judge title_id=7
 			for (var key in localJudge) {
+				
 				if(case_text[i].match( localJudge[key]) ){
+					
 					var temp = case_text[i].match(localJudge[key]);
 					insertResult([...temp][1], element.id, 7);
 					parsed = true;
 					break;
 				}
 			}
-			// console.log(JSON.stringify(case_text[i]));
-			// console.log(case_text[i].match( justiceMap.JudgeSP4 ));
+			
 			if(parsed) break;
 			//id = 29865"Coram:\tGlazebrook J Chambers J O'Regan J"
-		
+			
 			/**
 			 * multiple lines
 			 *  11175 20096 
@@ -248,7 +259,6 @@ const run = async (pgPromise, connection, logDir) => {
 			else if ( case_text[i].match('Court:\r') && !case_text[i].match('and') ) {
 				
 				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
-				// console.log(JSON.stringify(caseString));
 				var courtIndex = caseString.indexOf('Court:\r');
 				var counselIndex = caseString.indexOf('\rCounsel:');
 			
@@ -265,10 +275,12 @@ const run = async (pgPromise, connection, logDir) => {
 				
 				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
 					var justices = extractJustices(judgeStr.split(','));
-					// console.log(justices)
 					justices.forEach(element =>{
 						var judge = element.trim();
+						// findTitleInsertReuslt(judge,caseID, false);
+
 						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
+						else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
 						else insertResult(judge, caseID, 3);
 							
 					});
@@ -279,7 +291,9 @@ const run = async (pgPromise, connection, logDir) => {
 					var judges = judgeStr.split(/Judge/);
 					judges.forEach(element =>{
 						var judge = element.replace(',','').trim();
+						// findTitleInsertReuslt(judge,caseID,true);
 						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+						else if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
 						else insertResult(judge, caseID, 5);
 						
 					});
@@ -289,6 +303,8 @@ const run = async (pgPromise, connection, logDir) => {
 				else{
 					var justices = judgeStr.trim().split(/\s/);
 					for (var i = 0; i < justices.length; i=i+2) {
+						// findTitleInsertReuslt(justices[i],caseID,false);
+
 						if(justices[i+1] == 'J') insertResult(justices[i], caseID, 3);
 						else if(justices[i+1] == 'P') insertResult(justices[i], caseID, 2);
 						else if(justices[i+1] == 'CJ') insertResult(justices[i], caseID, 1);
@@ -319,7 +335,9 @@ const run = async (pgPromise, connection, logDir) => {
 					// console.log(justices)
 					justices.forEach(element =>{
 						var judge = element.trim();
+						// findTitleInsertReuslt(judge,caseID,false);
 						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
+						else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
 						else insertResult(judge, caseID, 3);
 							
 					});
@@ -330,7 +348,11 @@ const run = async (pgPromise, connection, logDir) => {
 					var judges = judgeStr.split(/Judge/);
 					judges.forEach(element =>{
 						var judge = element.replace(',','').trim();
-						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+						// findTitleInsertReuslt(judge,caseID,true);
+						if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
+						else if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+						
+						else if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
 						else insertResult(judge, caseID, 5);
 						
 					});
@@ -361,8 +383,9 @@ const run = async (pgPromise, connection, logDir) => {
 				
 				justices.forEach(element =>{
 					var judge = element.trim();
+					// findTitleInsertReuslt(judge,caseID,false);
 					if(judge.includes(' P'))insertResult(judge.replace(' P', '').trim(), caseID, 2);
-					else if(judge.includes(' J'))insertResult(judge.replace(' J', '').trim(), caseID, 3);
+					else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
 					else insertResult(judge, caseID, 3);
 						
 				});
@@ -374,7 +397,7 @@ const run = async (pgPromise, connection, logDir) => {
 			else if (case_text[i].match('Court:\t') ) {
 				
 				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
-				//console.log(JSON.stringify(caseString));
+				// console.log(JSON.stringify(caseString));
 				var courtIndex = caseString.indexOf('Court:\t');
 				var counselIndex = caseString.indexOf('Counsel:');
 			
@@ -392,8 +415,10 @@ const run = async (pgPromise, connection, logDir) => {
 					// console.log(justices)
 					justices.forEach(element =>{
 						var judge = element.trim();
+						// findTitleInsertReuslt(judge,caseID,false);
 						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
-						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+						else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
+						else if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
 						else insertResult(judge, caseID, 3);
 							
 					});
@@ -404,6 +429,7 @@ const run = async (pgPromise, connection, logDir) => {
 					var judges = judgeStr.split(/Judge/);
 					judges.forEach(element =>{
 						var judge = element.replace(',','').trim();
+						// findTitleInsertReuslt(judge, caseID, true);
 						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
 						else insertResult(judge, caseID, 5);
 						
@@ -435,13 +461,19 @@ const run = async (pgPromise, connection, logDir) => {
 	parsedResult.forEach(
 		(value,key)=>{
 			key = key.replace('\'', '\'\'');
-			if(key.length > 20 || key.length <2 || key.toLowerCase() == "the" || key.toLowerCase() == "judge" 
+			if(key.length > 20 || key.length <3 || key.toLowerCase() == "the" || key.toLowerCase() == "judge" 
 			|| key.toLowerCase() == "er" || key.toLowerCase() == "hon" || key.toLowerCase() == "court"){
 				console.log(`[${key}] = ${value[0]} = ${value[1]}`);
 				
 			}else{
 				console.log(`INSERT INTO cases.judges(id,last_name) VALUES(\'${judgeID}\', \'${key}\') ON CONFLICT DO NOTHING`);
 				judgeInsertQueries.push(`INSERT INTO cases.judges(id,last_name) VALUES (\'${judgeID}\', \'${key}\') ON CONFLICT DO NOTHING;`);
+
+
+				fs.appendFileSync('ParseJudgeBugCases.txt',`\nname: [${key}] titles: ${value[1]}\n cases: ${value[0]} \n`, function (err) {
+					if (err) 
+						return console.log(err);
+				}); 
 
 				value[1].forEach(
 					titleID =>{
@@ -488,3 +520,4 @@ if (require.main === module) {
 	module.exports = run;
 	module.exports.courtsMap = courtsMap;
 }
+	
