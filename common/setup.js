@@ -29,11 +29,8 @@ module.exports = async (env, resumeSessionId) => {
 	}
 
 	require('dotenv').config({
-		// path: rootDir + '/.env.' + env
-		path: 'C:\Users\tian\Desktop\openlaw-data\openlawnz-parsers'
-		
+		path: rootDir + '/.env.' + env
 	});
-	
 
 	// Ensure cache directory exists
 	await fs.ensureDir(cacheDir);
@@ -43,22 +40,22 @@ module.exports = async (env, resumeSessionId) => {
 
 
 	const conn = {
-		host: 'localhost',
-		database: 'openlawnz_db',
-		port: 5432,
-		user: 'postgres',
-		password: 'root',
+		host: process.env.DB_HOST,
+		database: process.env.DB_NAME,
+		port: process.env.PORT,
+		user: process.env.DB_USER,
+		password: process.env.DB_PASS,
 		client_encoding: 'UTF8'
 	};
 	
 	
 
 	const p_conn = {
-		host: 'localhost',
-		database: 'openlawnz_db',
-		port: 5432,
-		user: 'postgres',
-		password: 'root',
+		host: process.env.DB_HOST,
+		user: process.env.DB_USER,
+		password: process.env.DB_PASS,
+		database: process.env.DB_NAME,
+		port: process.env.PORT,
 		client_encoding: 'UTF8'
 	};
 
