@@ -1,14 +1,20 @@
 const { setLogFile, setLogDir, log } = require('../common/functions').makeLogger();
 /**
+ * For run this parser file in commend line with "node --max-old-space-size=4096 .\parseJudges.js --env== whatyouwant"
+ * After my test that currently cannot using wild expression will lose some accuracy.
+ * 
+ * some of special error cases
  * id=5951 blank
  * id = 7282 blank
  * id = 7423 blank
  * id = 7772 blank
- * 7817 H
+ * id = 7817 end with H
  * id = 30040 TIJDGMENT OF JUDGE K D KELLY should be
  * id = 29118 JUDGMENT OF ASSOCIATE FAIRE
  * 11614 'SENTENCING NOTES OF OF GENDALL J',
- * node --max-old-space-size=4096 .\parseJudges.js --env==test
+ * id = 30040 TIJDGMENT OF JUDGE K D KELLY should be
+ * id = 29118 JUDGMENT OF ASSOCIATE FAIRE
+ * @author Tian Bai
  */
 const justiceMap = {
 	Directions: /^DIRECTIONS\sOF\s(.*)\sJ/,
@@ -39,7 +45,6 @@ const justiceMap = {
 	JudgeNumber1: /^JUDGEMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeNumber2: /^JUDGMENT\s\(.*\)\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
-
 	JudgeOralHon:/^ORAL\sJUDGMENT\sOF\sHON\sJUSTICE\s(.*)/,
 	JudgeOral:/^ORAL\sJUDGMENT\sOF\s(.*)\sJ/,
 	JudgeOralSP1:/ORAL\sJUDGMENT\s(.*)OF\sJ/,
@@ -64,7 +69,6 @@ const justiceMap = {
 
 	RecallJudge: /^RECALL\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 
-	
 	JudgeSP1: /^JUDGEMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,	
 	JudgeSP2: /^\[.*\]\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ/,
 	JudgeSP3: /^\[.*\]\sJUDGMENT\sOF\s([a-zA-Z0-9\s]*)\sJ\(.*\)/,
@@ -75,7 +79,6 @@ const justiceMap = {
 	JudgeSP7: /^JUDGMENT\sOF\s([a-zA-Z0-9\s]*)\s\(.*\)/,
 	JudgeSP8: /^JUDGMENT\sOF\sJUDGE\s(.*)/,
 	JudgeSP9: /^JUDGMENT\sOF\sJUDGE\s(.*)\s\[.*\]/,
-	// JudgeSP10: /^JUDGMENT\sOF\s(.*)/,
 	JudgeSP11: /^JUDGMENT\sOF\s(.*)\sJ\s.*/,
 	Judge: /^JUDGMENT\sOF\s(.*)\sJ/,
 };
@@ -108,7 +111,6 @@ const assoJudge = {
 
 	JudgeAssociateReserved:/^RESERVED\sJUDGMENT\s\(.*\)\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 
-
 	DecisionAssociate: /^DECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	DecisionAssociateSp1: /REASONS\sFOR\sDECISION\sOF\sASSOCIATE\sJUDGE\s(.*)/,
 	Orders:/ORDERS\sOF\sASSOCIATE\sJUDGE\s(.*)/,
@@ -116,7 +118,6 @@ const assoJudge = {
 };
 
 const localJudge = {
-	
 	ReservedJudgement1:/^RESERVED\sJUDGMENT\sOF\sJUDGE\s([a-zA-Z0-9\s]*)/,
 	Judge: /^JUDGMENT\sOF\sJUDGE\s([a-zA-Z0-9\s]*)/,
 	Decision: /^DECISION\sOF\sJUDGE\s([a-zA-Z0-9\s]*)/,
@@ -125,20 +126,9 @@ const localJudge = {
 	
 };
 
-/**
- * Parse Invalid Characters
- * 
- * id=5951 blank
- * id = 7282 blank
- * id = 7423 blank
- * id = 7772 blank
- * id = 30040 TIJDGMENT OF JUDGE K D KELLY should be
- * id = 29118 JUDGMENT OF ASSOCIATE FAIRE
- * @param PostgresqlConnection connection
- */
 const run = async (pgPromise, connection, logDir) => {
 	console.log('\n-----------------------------------');
-	console.log('Parse courts');
+	console.log('Parse judge');
 	console.log('-----------------------------------\n');
 
 	setLogDir(logDir);
@@ -146,38 +136,24 @@ const run = async (pgPromise, connection, logDir) => {
 
 	console.log('Loading all cases and case citations');
 
-
+	var queryClause = 'SELECT * FROM cases.cases ';
 	var parsedResult = new Map();
 	var unParsedResult = [];
 
 	function extractJustices(justices){
-		
 		const valuesToRemove = ['and','JJ' ];
 		var lastElement = justices.pop().trim();
 		var lastTwo;
 		
-		if(lastElement.includes('and') && !lastElement.includes('JJ') ){
-			lastTwo = lastElement.split('and');
-		}
-		else if(lastElement.includes('&') && !lastElement.includes('JJ') ){
-			lastTwo = lastElement.split('&');
-		}
-		else if(lastElement.includes('&') && lastElement.includes('JJ') ){
-			lastTwo = lastElement.split('&');
-		}
-		else{
-			lastTwo = lastElement.split(' ').filter(lastTwo =>  !valuesToRemove.includes(lastTwo) );
-		}
-
+		if(lastElement.includes('and') && !lastElement.includes('JJ') ) lastTwo = lastElement.split('and');
+		else if(lastElement.includes('&') && !lastElement.includes('JJ') ) lastTwo = lastElement.split('&');
+		else if(lastElement.includes('&') && lastElement.includes('JJ') ) lastTwo = lastElement.split('&');
+		else lastTwo = lastElement.split(' ').filter(lastTwo =>  !valuesToRemove.includes(lastTwo) );
+		
 		return justices.concat(lastTwo);
 	};
 
-	/**
-	 * 
-	 * @param {*} judgeName 
-	 * @param {*} caseID 
-	 * @param {*} titleID 
-	 */
+	//help method for insert value into result list
 	function insertResult(judgeName, caseID, titleID){
 	
 		if(!parsedResult.has(judgeName)){
@@ -190,33 +166,72 @@ const run = async (pgPromise, connection, logDir) => {
 			parsedResult.set(judgeName, [casesApper, titles]);
 		}
 
-	}
+	};
 
-	function findTitleInsertReuslt(judgeString, caseID, AssociateJudge){
+	function parseMultiJudgesCases(caseString, matchingToken, caseID){
+		var parsed = false;
 
-		if(judgeString.includes('P') ) insertResult(judgeString.replace('P', '').trim(), caseID, 2);
-		else if(judgeString.includes('CJ')) insertResult(judgeString.replace('CJ', '').trim(), caseID, 1);
-		else if(judgeString.includes('J')) insertResult(judgeString.replace('J', '').trim(), caseID, 3);
-		else if(AssociateJudge) insertResult(judgeString, caseID, 5);
-	}
+		var courtIndex = caseString.indexOf(matchingToken);
+		var counselIndex = caseString.indexOf('\rCounsel:');
+		
+		if (counselIndex == -1) counselIndex = caseString.indexOf('Appearances:');
+		if (counselIndex == -1) counselIndex = caseString.indexOf('Judgment:');
 
-    const cases = await connection.any('SELECT * FROM cases.cases ');
+		var judgeStr = caseString.substring(courtIndex+7, counselIndex);
+			
+		// remove year
+		if (judgeStr.match(/\d{4}/ )) judgeStr = judgeStr.substring(judgeStr.match(/\d{4}/ ).index+4);
+		if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
+			var justices = extractJustices(judgeStr.split(','));
+			justices.forEach(element =>{
+				var judge = element.trim();
+				if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
+				else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
+				else insertResult(judge, caseID, 3);
+						
+			});
+			parsed = true;
+				
+		}else if(judgeStr.match(/Judge/)){
+			var judges = judgeStr.split(/Judge/);
+			judges.forEach(element =>{
+				var judge = element.replace(',','').trim();
+				if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
+				else if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
+				else insertResult(judge, caseID, 5);
+					
+			});
+			parsed = true;
+	
+		}else{
+			var justices = judgeStr.trim().split(/\s/);
+			for (var i = 0; i < justices.length; i=i+2) {
+				if(justices[i+1] == 'J') insertResult(justices[i], caseID, 3);
+				else if(justices[i+1] == 'P') insertResult(justices[i], caseID, 2);
+				else if(justices[i+1] == 'CJ') insertResult(justices[i], caseID, 1);
+			}
+			parsed = true;
+		}
+		
+		return parsed;
+		
+	};
+
+    const cases = await connection.any(queryClause);
 	const valuesToRemove = ['','Introduction' ];
 	
     cases.forEach(
 
         element => {
-
         var case_text = element.case_text.split(/\r\n/).filter(text =>  !valuesToRemove.includes(text)   );
 		var caseID = element.id;
-
 		var parsed = false;
+
         for( var i = 0; i < case_text.length; i++){ 
 			
 			// assojudge cases with judge title_id=5
 			for (var key in assoJudge) {
 				if(case_text[i].match( assoJudge[key]) ){
-					console.log(case_text[i].match( assoJudge[key]), assoJudge[key])
 					var temp = case_text[i].match(assoJudge[key]);
 					insertResult([...temp][1], element.id, 5);
 					parsed = true;
@@ -227,7 +242,6 @@ const run = async (pgPromise, connection, logDir) => {
 			// justices cases with judge title_id=3
 			for (var key in justiceMap) {
 				if(case_text[i].match( justiceMap[key]) ){
-					console.log(case_text[i].match( justiceMap[key]), justiceMap[key])
 					var temp = case_text[i].match(justiceMap[key]);
 					insertResult([...temp][1], element.id, 3);
 					parsed = true;
@@ -237,7 +251,6 @@ const run = async (pgPromise, connection, logDir) => {
 			if(parsed) break;
 			// local cases with judge title_id=7
 			for (var key in localJudge) {
-				
 				if(case_text[i].match( localJudge[key]) ){
 					
 					var temp = case_text[i].match(localJudge[key]);
@@ -246,144 +259,33 @@ const run = async (pgPromise, connection, logDir) => {
 					break;
 				}
 			}
-			
 			if(parsed) break;
-			//id = 29865"Coram:\tGlazebrook J Chambers J O'Regan J"
 			
 			/**
-			 * multiple lines
-			 *  11175 20096 
+			 * multiple lines cases:
+			 * 11175 20096 
 			 * 7165 Court:\r   \rAppearances: no \rCounsel:
 			 * 29865 Coram: Glazebrook 
 			 */
-			else if ( case_text[i].match('Court:\r') && !case_text[i].match('and') ) {
-				
+			else if ( case_text[i].match('Court:\r') && !case_text[i].match('and')){
 				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
-				var courtIndex = caseString.indexOf('Court:\r');
-				var counselIndex = caseString.indexOf('\rCounsel:');
-			
-				if (counselIndex == -1) counselIndex = caseString.indexOf('\rAppearances:');
-				if (counselIndex == -1) counselIndex = caseString.indexOf('Judgment:');
-
-				var judgeStr = caseString.substring(courtIndex+7, counselIndex);
-				
-				// remove year
-				if (judgeStr.match(/\d{4}/ )) judgeStr = judgeStr.substring(judgeStr.match(/\d{4}/ ).index+4);
-					
-				
-				// console.log(JSON.stringify(judgeStr) );
-				
-				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
-					var justices = extractJustices(judgeStr.split(','));
-					justices.forEach(element =>{
-						var judge = element.trim();
-						// findTitleInsertReuslt(judge,caseID, false);
-
-						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
-						else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
-						else insertResult(judge, caseID, 3);
-							
-					});
-					parsed = true;
-					break;
-				}
-				else if(judgeStr.match(/Judge/)){
-					var judges = judgeStr.split(/Judge/);
-					judges.forEach(element =>{
-						var judge = element.replace(',','').trim();
-						// findTitleInsertReuslt(judge,caseID,true);
-						if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
-						else if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
-						else insertResult(judge, caseID, 5);
-						
-					});
-					parsed = true;
-					break;
-				}
-				else{
-					var justices = judgeStr.trim().split(/\s/);
-					for (var i = 0; i < justices.length; i=i+2) {
-						// findTitleInsertReuslt(justices[i],caseID,false);
-
-						if(justices[i+1] == 'J') insertResult(justices[i], caseID, 3);
-						else if(justices[i+1] == 'P') insertResult(justices[i], caseID, 2);
-						else if(justices[i+1] == 'CJ') insertResult(justices[i], caseID, 1);
-					}
-					parsed = true;
-					break;
-				}
-				
+				parsed = parseMultiJudgesCases(caseString, 'Court:\r', caseID);
+				if(parsed) break;
 			}
-
-			else if ( case_text[i].match('Coram:\t') && !case_text[i].match('and') ) {
-				
+			//id = 29865"Coram:\tGlazebrook J Chambers J O'Regan J"
+			else if ( case_text[i].match('Coram:\t') && !case_text[i].match('and')){
 				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
-				// console.log(JSON.stringify(caseString));
-				var courtIndex = caseString.indexOf('Coram:\t');
-	
-				var counselIndex = caseString.indexOf('\rCounsel:');
-				if (counselIndex == -1) counselIndex = caseString.indexOf('Appearances:');
-				if (counselIndex == -1) counselIndex = caseString.indexOf('Judgment:');
-
-				var judgeStr = caseString.substring(courtIndex+7, counselIndex);
-				
-				// remove year
-				if (judgeStr.match(/\d{4}/ )) judgeStr = judgeStr.substring(judgeStr.match(/\d{4}/ ).index+4);
-					
-				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
-					var justices = extractJustices(judgeStr.split(','));
-					// console.log(justices)
-					justices.forEach(element =>{
-						var judge = element.trim();
-						// findTitleInsertReuslt(judge,caseID,false);
-						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
-						else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
-						else insertResult(judge, caseID, 3);
-							
-					});
-					parsed = true;
-					break;
-				}
-				else if(judgeStr.match(/Judge/)){
-					var judges = judgeStr.split(/Judge/);
-					judges.forEach(element =>{
-						var judge = element.replace(',','').trim();
-						// findTitleInsertReuslt(judge,caseID,true);
-						if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
-						else if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
-						
-						else if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
-						else insertResult(judge, caseID, 5);
-						
-					});
-					parsed = true;
-					break;
-				}
-				else{
-					var justices = judgeStr.trim().split(/\s/);
-					for (var i = 0; i < justices.length; i=i+2) {
-						if(justices[i+1] == 'J') insertResult(justices[i], caseID, 3);
-						else if(justices[i+1] == 'P') insertResult(justices[i], caseID, 2);
-						else if(justices[i+1] == 'CJ') insertResult(justices[i], caseID, 1);
-					}
-					parsed = true;
-					break;
-				}
-				
+				parsed = parseMultiJudgesCases(caseString, 'Coram:\t', caseID);
+				if(parsed) break;
 			}
-			
+		
 			else if (case_text[i].match('Court:\r') ) {
-				
 				var splitByR = String(case_text[i] + '\r'+ case_text[i+1]).split('\r');
-				
 				var courtIndex = splitByR.indexOf('Court:');
 				var element = splitByR[courtIndex+1].split(',') ;
-				
 				var justices = extractJustices([...element]);
-				
 				justices.forEach(element =>{
 					var judge = element.trim();
-					// findTitleInsertReuslt(judge,caseID,false);
 					if(judge.includes(' P'))insertResult(judge.replace(' P', '').trim(), caseID, 2);
 					else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
 					else insertResult(judge, caseID, 3);
@@ -392,17 +294,12 @@ const run = async (pgPromise, connection, logDir) => {
 				parsed = true;
 				break;
 			}
-
-			// Example: 27222 court:\t
+			//Example: 27222 court:\t
 			else if (case_text[i].match('Court:\t') ) {
-				
 				var caseString = [ case_text[i], case_text[i+1], case_text[i+2]].join(' ');
-				// console.log(JSON.stringify(caseString));
 				var courtIndex = caseString.indexOf('Court:\t');
 				var counselIndex = caseString.indexOf('Counsel:');
-			
 				if (counselIndex == -1) counselIndex = caseString.indexOf('Appearances:');
-				
 				if (counselIndex == -1) counselIndex = caseString.indexOf('Judgment:');
 
 				var judgeStr = caseString.substring(courtIndex+7, counselIndex);
@@ -412,10 +309,9 @@ const run = async (pgPromise, connection, logDir) => {
 				
 				if(judgeStr.includes('and') && !judgeStr.match(/\w+and\w+/)){
 					var justices = extractJustices(judgeStr.split(','));
-					// console.log(justices)
+					
 					justices.forEach(element =>{
 						var judge = element.trim();
-						// findTitleInsertReuslt(judge,caseID,false);
 						if(judge.includes('P'))insertResult(judge.replace('P', '').trim(), caseID, 2);
 						else if(judge.includes('CJ'))insertResult(judge.replace('CJ', '').trim(), caseID, 1);
 						else if(judge.includes('J'))insertResult(judge.replace('J', '').trim(), caseID, 3);
@@ -504,7 +400,6 @@ const run = async (pgPromise, connection, logDir) => {
 };
 
 
-
 if (require.main === module) {
 	const argv = require('yargs').argv;
 	(async () => {
@@ -521,3 +416,49 @@ if (require.main === module) {
 	module.exports.courtsMap = courtsMap;
 }
 	
+// CREATE TABLE cases.judge_titles
+// (
+//     id integer NOT NULL DEFAULT nextval('cases.judge_titles_id_seq'::regclass),
+//     short_title text COLLATE pg_catalog."default",
+//     long_title text COLLATE pg_catalog."default",
+//     CONSTRAINT judge_titles_pkey PRIMARY KEY (id),
+//     CONSTRAINT judge_titles_long_title_key UNIQUE (long_title),
+//     CONSTRAINT judge_titles_short_title_key UNIQUE (short_title)
+// )
+
+// id short_title long_title
+// 1	CJ	Chief Justice
+// 2	P	President of the Court of Appeal
+// 3	J	Justice (Supreme Court, Court of Appeal, High Court)
+// 4	JJ	Justices (Supreme Court, Court of Appeal, High Court)
+// 5	Associate Judge	Associate Judge
+// 6	Master	Master
+// 7	Judge	(District Court) Judge
+// 8	Chief Judge	Chief Judge of the Employment Court, Chief Judge of District Court, Chief Judge of Māori Land Court
+// 9	Principal Judge	Principal Family Court Judge, Principal Youth Court Judge and Principal Environment Judge
+
+// CREATE TABLE cases.judges
+// (
+//     id integer NOT NULL DEFAULT nextval('cases.judges_id_seq'::regclass),
+//     first_name text COLLATE pg_catalog."default",
+//     last_name text COLLATE pg_catalog."default" NOT NULL,
+//     CONSTRAINT judges_pkey PRIMARY KEY (id)
+// )
+
+// CREATE TABLE cases.judges_title_relation
+// (
+//     id integer NOT NULL DEFAULT nextval('cases.judges_title_relation_id_seq'::regclass),
+//     judge_id integer,
+//     judge_title_id integer,
+//     CONSTRAINT judges_title_relation_pkey PRIMARY KEY (id),
+//     CONSTRAINT judges_title_relation_judge_id_fkey FOREIGN KEY (judge_id)
+//         REFERENCES cases.judges (id) MATCH SIMPLE
+//         ON UPDATE NO ACTION
+//         ON DELETE NO ACTION
+//         NOT VALID,
+//     CONSTRAINT judges_title_relation_judge_title_id_fkey FOREIGN KEY (judge_title_id)
+//         REFERENCES cases.judge_titles (id) MATCH SIMPLE
+//         ON UPDATE NO ACTION
+//         ON DELETE NO ACTION
+//         NOT VALID
+// )
