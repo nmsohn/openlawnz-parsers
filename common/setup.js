@@ -38,6 +38,7 @@ module.exports = async (env, resumeSessionId) => {
 	// Ensure log directory exists
 	await fs.ensureDir(logDir);
 
+
 	const conn = {
 		host: process.env.DB_HOST,
 		database: process.env.DB_NAME,
@@ -46,8 +47,11 @@ module.exports = async (env, resumeSessionId) => {
 		password: process.env.DB_PASS,
 		client_encoding: 'UTF8'
 	};
+	
+	
 
 	let connection = pgPromise(conn);
+
 
 	return {
 		sessionId,
