@@ -1,11 +1,12 @@
--- 1. note that table name is cases_rep that is the one of temporary tables for cases.cases
+-- 1. note that table name is pipeline_cases.case_citations_tmp that is the one of temporary tables for cases.cases
 -- 2. All temporary tables will be inserted as a joined form
 
--- drop table pipeline_cases.cases_rep 
+-- drop table pipeline_cases.case_citations_tmp
 
-create table pipeline_cases.cases_rep 
-as select id case_id
-, replace(replace(replace(replace(replace(replace(replace(replace(case_text, '?', ''),'…', ''),'‘', E'\''),'’', E'\''),'“', E'\"'),'”', E'\"'),'',''),'?','') case_text 
-, replace(replace(replace(replace(replace(replace(replace(replace(case_footnotes, '?', ''),'…', ''),'‘', E'\''),'’', E'\''),'“', E'\"'),'”', E'\"'),'',''),'?','') case_footnotes 
-, replace(replace(replace(replace(replace(replace(replace(replace(case_footnote_contexts, '?', ''),'…', ''),'‘', E'\''),'’', E'\''),'“', E'\"'),'”', E'\"'),'',''),'?','') case_footnote_contexts
-from pipeline_cases.cases;
+create table pipeline_cases.case_citations_tmp
+as select id case_id, regexp_matches(case_text, '\[\d{4}\]\s[[:alpha:]]{4}\s[0-9]{1,4}') citation from pipeline_cases.cases;
+
+insert into pipeline_cases.case_citations_tmp
+select id case_id, regexp_matches(case_text, '\[\d{4}\]\s[0-9]\s[[:alpha:]]{4}\s[0-9]{1,4}') citation from pipeline_cases.cases;
+
+commit;
