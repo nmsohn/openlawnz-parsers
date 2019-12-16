@@ -1,4 +1,4 @@
--- 1. note that table name is cases_rep that is temporary table for cases.cases
+-- 1. note that table name is cases_rep that is the one of temporary tables for cases.cases
 -- 2. All temporary tables will be inserted as a joined form
 
 -- drop table pipeline_cases.cases_rep 
