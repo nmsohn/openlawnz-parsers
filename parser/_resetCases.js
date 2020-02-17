@@ -1,4 +1,4 @@
-const run = async (pgPromise, connection, pipeline_connection, logDir) => {
+const run = async (pgPromise, connection, logDir) => {
 	console.log('\n-----------------------------------');
 	console.log(`Resetting cases in 5 seconds`);
     console.log('-----------------------------------\n');
@@ -27,13 +27,13 @@ const run = async (pgPromise, connection, pipeline_connection, logDir) => {
 		});
 	console.log('INSERT INTO "cases" tables FROM "pipeline_cases"');
 
-	await pipeline_connection.tx(async (t) => {
-		const q1 = await t.none('INSERT INTO cases.case_pdfs SELECT * FROM pipeline_cases.case_pdfs LIMIT 100');
+	await connection.tx(async (t) => {
+		const q1 = await t.none('INSERT INTO cases.case_pdfs SELECT * FROM pipeline_cases.case_pdfs');
 		const q2 = await t.none(
-			'INSERT INTO cases.cases (id, pdf_id, case_date, case_text, case_name, case_footnotes, case_footnote_contexts) SELECT id, pdf_id, case_date, case_text, case_name, case_footnotes, case_footnote_contexts FROM pipeline_cases.cases LIMIT 100'
+			'INSERT INTO cases.cases (id, pdf_id, case_date, case_text, case_name, case_footnotes, case_footnote_contexts) SELECT id, pdf_id, case_date, case_text, case_name, case_footnotes, case_footnote_contexts FROM pipeline_cases.cases'
 		);
-		const q3 = await t.none('INSERT INTO cases.case_citations SELECT * FROM pipeline_cases.case_citations LIMIT 100');
-		const q4 = await t.none('INSERT INTO cases.legislation SELECT * FROM pipeline_cases.legislation LIMIT 100');
+		const q3 = await t.none('INSERT INTO cases.case_citations SELECT * FROM pipeline_cases.case_citations');
+		const q4 = await t.none('INSERT INTO cases.legislation SELECT * FROM pipeline_cases.legislation');
 		return t.batch([ q1, q2, q3, q4 ]);
 	});
 
@@ -44,8 +44,8 @@ if (require.main === module) {
 	const argv = require('yargs').argv;
 	(async () => {
 		try {
-			const { pgPromise, connection, pipeline_connection, logDir } = await require('../common/setup')(argv.env);
-			await run(pgPromise, connection, pipeline_connection, logDir);
+			const { pgPromise, connection, logDir } = await require('../common/setup')(argv.env);
+			await run(pgPromise, connection, logDir);
 		} catch (ex) {
 			console.log(ex);
 		}

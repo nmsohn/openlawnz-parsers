@@ -1,6 +1,7 @@
 /**
  * @file Runs all the steps for processing law data
  */
+'use strict';
 const argv = require('yargs').argv;
 const moment = require('moment');
 
@@ -36,8 +37,28 @@ const run = async () => {
 	console.log(`All done. Took ${moment().diff(start, 'minutes')} minutes`);
 };
 
-run()
-	.catch((ex) => {
+exports.handler = async (event, context, callback) => {
+	try{
+		run();
+		var response = {
+			"statusCode": 200,
+			"headers": {
+				"Content-Type" : "application/json"
+			},
+			"body": JSON.stringify(rows),
+			"isBase64Encoded": false
+		};
+		callback(null, response);
+	}catch(ex){
 		console.log(ex);
-	})
-	.finally(process.exit);
+		callback(null, 'Database ' + err);
+	}finally{
+		process.exit;
+	}
+}
+
+// run()
+// 	.catch((ex) => {
+// 		console.log(ex);
+// 	})
+// 	.finally(process.exit);

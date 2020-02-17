@@ -7,8 +7,11 @@
   "scripts": {
     "test": "set SUPPRESS_LOGGING=true && mocha",
     "parser": "yarn test && cd parser && node index.js --env=local",
-    "debug": "node parseCaseToCase.js --env=dev"
+    "debug": "node parseCaseToCase.js --env=dev",
+    "deploy": " — zip-file fileb://Lambda-Deployment.zip",
+    "predeploy": "zip -r Lambda-Deployment.zip * -x *.zip *.log"
   },
+  "keywords": ["postgres"],
   "repository": "git+https://github.com/nmsohn/openlawnz-parsers.git",
   "author": "openlawnz",
   "license": "ISC",

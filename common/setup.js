@@ -38,6 +38,7 @@ module.exports = async (env, resumeSessionId) => {
 	// Ensure log directory exists
 	await fs.ensureDir(logDir);
 
+
 	const conn = {
 		host: process.env.DB_HOST,
 		database: process.env.DB_NAME,
@@ -46,25 +47,17 @@ module.exports = async (env, resumeSessionId) => {
 		password: process.env.DB_PASS,
 		client_encoding: 'UTF8'
 	};
+	
+	
 
-	const p_conn = {
-		host: process.env.DB_HOST,
-		user: process.env.DB_USER,
-		password: process.env.DB_PASS,
-		database: process.env.DB_NAME,
-		port: process.env.PORT,
-		client_encoding: 'UTF8'
-	};
+	let connection = pgPromise(conn);
 
-	let connection = await pgPromise(conn);
-	let pipeline_connection = await pgPromise(p_conn);
 
 	return {
 		sessionId,
 		cacheDir,
 		logDir,
 		pgPromise,
-		connection,
-		pipeline_connection
+		connection
 	};
 };
