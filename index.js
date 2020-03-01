@@ -1,7 +1,6 @@
 /**
  * @file Runs all the steps for processing law data
  */
-'use strict';
 const argv = require('yargs').argv;
 const moment = require('moment');
 

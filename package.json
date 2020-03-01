@@ -11,7 +11,9 @@
     "deploy": " — zip-file fileb://Lambda-Deployment.zip",
     "predeploy": "zip -r Lambda-Deployment.zip * -x *.zip *.log"
   },
-  "keywords": ["postgres"],
+  "keywords": [
+    "postgres"
+  ],
   "repository": "git+https://github.com/nmsohn/openlawnz-parsers.git",
   "author": "openlawnz",
   "license": "ISC",
@@ -21,6 +23,7 @@
   "homepage": "https://github.com/nmsohn/openlawnz-parsers#readme",
   "dependencies": {
     "async": "^3.1.0",
+    "aws-sdk": "^2.619.0",
     "chai": "^4.2.0",
     "dotenv": "^8.1.0",
     "download": "^7.1.0",
