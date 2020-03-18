@@ -9,7 +9,15 @@
     "parser": "yarn test && cd parser && node index.js --env=local",
     "debug": "node parseCaseToCase.js --env=dev",
     "deploy": " — zip-file fileb://Lambda-Deployment.zip",
-    "predeploy": "zip -r Lambda-Deployment.zip * -x *.zip *.log"
+    "predeploy": "zip -r Lambda-Deployment.zip * -x *.zip *.log",
+    "resetCases": "cd parser && node _resetCases.js --env=dev",
+    "parseInvalidCharacters": "cd parser && node parseInvalidCharacters.js --env=dev",
+    "parseCasesCitations": "cd parser && node parseCasesCitations.js --env=dev",
+    "parseCaseToCase": "cd parser && node parseCaseToCase.js --env=dev",
+    "parseCourts": "cd parser && node parseCourts.js --env=dev",
+    "parseEmptyCitations": "cd parser && node parseEmptyCitations.js --env=dev",
+    "parseFootnotes": "cd parser && node parseFootnotes.js --env=dev",
+    "parseLegislationToCases": "cd parser && node parseLegislationToCases.js --env=dev"
   },
   "keywords": [
     "postgres"
